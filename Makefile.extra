@@ -1,0 +1,46 @@
+# downloadable content
+iop/mmceman.irx:
+	wget -q https://github.com/ps2-mmce/mmceman/releases/download/latest/mmceman.irx -O "$@"
+
+ifdef IOPRP
+  EE_LIBS += -liopreboot
+  EE_OBJS += ioprp.o
+$(IOPRP):
+	wget -q $(IOPRP_URL) -O $@
+
+%.c: %.img
+	bin2c $< $@ ioprp
+endif
+
+ifeq ($(DEBUG), 1)
+  EXCEPTION_HANDLER = 1
+  EE_CFLAGS += -DDEBUG -O0 -g
+else
+  EE_CFLAGS += -Os
+  EE_LDFLAGS += -s
+endif
+
+ifeq ($(EXCEPTION_HANDLER),1)#builtin exception handler for situations/consoles that cant use ps2link
+  EE_CFLAGS += -DCATCH_EXCEPTIONS
+  EE_LIBS += -Lexceptionman -lexceptionman
+  DEPENDENCIES += exceptionman/libexceptionman.a
+exceptionman/libexceptionman.a: exceptionman/
+	$(MAKE) -C $<
+endif
+
+ifeq ($(ARCADE), 1)
+  IOPRP=ioprp.img
+  IOPRP_URL=https://github.com/israpps/SC2MAKER/raw/refs/heads/main/embed/iop/ioprp_arcade.img
+  IOPOBJS += $(EE_OBJS_DIR)dongleman.o
+else
+  IOPOBJS += $(EE_OBJS_DIR)mcman.o
+endif
+
+# IRX embedding
+vpath %.irx iop/
+vpath %.irx $(PS2SDK)/iop/irx/
+IRXTAG = $(notdir $(addsuffix _irx, $(basename $<)))
+$(EE_OBJS_DIR)%.c: %.irx
+	$(DIR_GUARD)
+	@bin2c $< $@ $(IRXTAG)
+
