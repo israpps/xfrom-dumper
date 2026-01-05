@@ -3,6 +3,7 @@
 #include <kernel.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <sbv_patches.h>
 #include <sio.h>
 
@@ -25,6 +26,7 @@ IMPORT_BIN2C(mcman_irx)
 IMPORT_BIN2C(xfromdump_irx)
 IMPORT_BIN2C(extflash_irx)
 IMPORT_BIN2C(xfromman_irx);
+IMPORT_BIN2C(ps2dev9_irx);
 
 void reboot_iop(const char* bootstr) {
 #ifndef IOPRP
@@ -45,21 +47,27 @@ void sbv_patch() {
 #endif
 }
 
+#include <debug.h>
+//prints the result of an IRX execution, if exec was ok, keeps printing on the same line, if something went wrong... keep the line
+#define IRX_REPORT(x, id, ret) scr_printf("\t%s: id:%d, ret:%d\t\t%c", #x, id, ret, (id < 0 || ret == 1) ? '\n' : '\r'); if (id < 0 || ret == 1) sleep(1);
+
 void loadAllModules() {
-    IRX_LOADBUFF(iomanX_irx, NULL);
-    IRX_LOADBUFF(fileXio_irx, NULL);
+    int id, ret;
+    id = IRX_LOADBUFF(iomanX_irx, &ret); IRX_REPORT(IOMANX, id, ret);
+    id = IRX_LOADBUFF(fileXio_irx, &ret); IRX_REPORT(FILEXIO, id, ret);
 
-    IRX_LOADBUFF(usbd_irx, NULL);
-    IRX_LOADBUFF(bdm_irx, NULL);
-    IRX_LOADBUFF(bdmfs_fatfs_irx, NULL);
-    IRX_LOADBUFF(usbmass_bd_irx, NULL);
+    id = IRX_LOADBUFF(usbd_irx, &ret); IRX_REPORT(USBD, id, ret);
+    id = IRX_LOADBUFF(bdm_irx, &ret); IRX_REPORT(BDM, id, ret);
+    id = IRX_LOADBUFF(bdmfs_fatfs_irx, &ret); IRX_REPORT(BDM_FATFS, id, ret);
+    id = IRX_LOADBUFF(usbmass_bd_irx, &ret); IRX_REPORT(USBDMASSBD, id, ret);
 
-    IRX_LOADBUFF(sio2man_irx, NULL);
-    IRX_LOADBUFF(padman_irx, NULL);
-    IRX_LOADBUFF(mcserv_irx, NULL);
-    IRX_LOADBUFF(mcman_irx, NULL);
+    id = IRX_LOADBUFF(sio2man_irx, &ret); IRX_REPORT(SIO2MAN, id, ret);
+    id = IRX_LOADBUFF(padman_irx, &ret); IRX_REPORT(PADMAN, id, ret);
+    id = IRX_LOADBUFF(mcman_irx, &ret); IRX_REPORT(MCMAN, id, ret);
+    id = IRX_LOADBUFF(mcserv_irx, &ret); IRX_REPORT(MCSERV, id, ret);
 
-    IRX_LOADBUFF(extflash_irx, NULL);
-    IRX_LOADBUFF(xfromman_irx, NULL);
-    IRX_LOADBUFF(xfromdump_irx, NULL);
+    id = IRX_LOADBUFF(ps2dev9_irx, &ret); IRX_REPORT(DEV9, id, ret);
+    id = IRX_LOADBUFF(extflash_irx, &ret); IRX_REPORT(EXTFLASH, id, ret);
+    id = IRX_LOADBUFF(xfromman_irx, &ret); IRX_REPORT(XFROMMAN, id, ret);
+    id = IRX_LOADBUFF(xfromdump_irx, &ret); IRX_REPORT(XFROMDMP, id, ret);
 }

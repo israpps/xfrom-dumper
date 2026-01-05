@@ -23,11 +23,16 @@ int main(int argc, char** argv) {
     reboot_iop("");
     SifInitIopHeap(); // Initialize SIF services for loading modules and files.
     SifLoadFileInit();
+    init_scr();
+    scr_setCursor(0);
+
+    scr_clear();
+    scr_printf("\n\n\n\n\n");
+
     sbv_patch();
     loadAllModules();
-    init_scr();
-
-    scr_setCursor(0);
+    sleep(2);
+    scr_clear();
     scr_printf("\n\n");
     scr_centerputs(" PSX XFROM DUMPER ", '=');
     scr_centerputs("Coded by El_isra", ' ');

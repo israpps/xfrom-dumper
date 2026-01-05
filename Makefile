@@ -4,7 +4,10 @@ EE_OBJS_DIR = embed/
 EE_OBJS = main.o modelname.o pad.o iopstuff.o scr_stuff.o \
 	$(IOPOBJS) iop/xfromdump/ee_rpc.o
 
-IOPOBJS += $(addprefix $(EE_OBJS_DIR), usbd.o bdm.o bdmfs_fatfs.o usbmass_bd.o fileXio.o iomanX.o mmceman.o sio2man.o mcserv.o padman.o xfromdump.o extflash.o xfromman.o)
+IOPOBJS += $(addprefix $(EE_OBJS_DIR), \
+  usbd.o bdm.o bdmfs_fatfs.o usbmass_bd.o fileXio.o iomanX.o \
+  mmceman.o sio2man.o mcserv.o padman.o xfromdump.o extflash.o  \
+  xfromman.o ps2dev9.o)
 
 DEBUG ?= 0
 EE_CFLAGS += -fdata-sections -ffunction-sections -DNEWLIB_PORT_AWARE
